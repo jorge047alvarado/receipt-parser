@@ -9,7 +9,7 @@ PURCHASE_DATE_RE = re.compile(
 )
 
 TRANSACTION_ID_RE = re.compile(
-    r"^(?P<receipt_id>TCH(?:\s+\d+)+)$",
+    r"^(?P<transaction_id>TCH(?:\s+\d+)+)$",
     re.IGNORECASE,
 )
 
@@ -44,22 +44,47 @@ TOTAL_RE = re.compile(
 #
 # OCR can produce several variants.
 
+# TAX_RE = re.compile(
+#     r"""
+#     ^
+#     (?:
+#         TAX\s+
+#         (?P<code1>\d+)\s+
+#         (?P<rate1>\d+(?:\.\d+)?)\s*%?\s+
+#         (?P<amount1>\d+\.\d{2})
+#     |
+#         (?P<rate2>\d+(?:\.\d+)?)%\s*TAX\s+
+#         (?P<code2>\d+)\s+
+#         (?P<amount2>\d+\.\d{2})
+#     )
+#     $
+#     """,
+#     re.IGNORECASE | re.VERBOSE,
+# )
+
 TAX_RE = re.compile(
     r"""
     ^
     (?:
-        TAX\s+
-        (?P<code1>\d+)\s+
-        (?P<rate1>\d+(?:\.\d+)?)\s*%?\s+
-        (?P<amount1>\d+\.\d{2})
-    |
-        (?P<rate2>\d+(?:\.\d+)?)%\s*TAX\s+
-        (?P<code2>\d+)\s+
-        (?P<amount2>\d+\.\d{2})
+        (?P<rate1>\d+(?:\.\d+)?)%
+        \s+TAX
+        \s+(?P<code1>\d+)
+
+        |
+
+        TAX
+        \s+(?P<code2>\d+)
+        \s+(?P<rate2>\d+(?:\.\d+)?)
+        \s*%
     )
+
+    \s+
+
+    (?P<amount>\d+\.\d{2})
+
     $
     """,
-    re.IGNORECASE | re.VERBOSE,
+    re.VERBOSE,
 )
 
 # ==========================================================
@@ -81,27 +106,6 @@ ITEM_RE = re.compile(
     \s+
     (?P<price>\d+\.\d{2})
     (?:\s+(?P<item_code>[A-Z]))?
-    $
-    """,
-    re.VERBOSE,
-)
-
-# ==========================================================
-# PACK SIZE ITEM
-# ==========================================================
-
-# Example:
-#
-# 2/9 0980124691 OS CRAN
-
-PACK_ITEM_RE = re.compile(
-    r"""
-    ^
-    (?P<pack_size>\d+/\d+)
-    \s+
-    (?P<barcode>\d{10,11})
-    \s+
-    (?P<description>.+)
     $
     """,
     re.VERBOSE,
@@ -158,4 +162,77 @@ DISCOUNT_RE = re.compile(
     $
     """,
     re.IGNORECASE | re.VERBOSE,
+)
+
+MULTIBUY_HEADER_RE = re.compile(
+    r"""
+    ^
+    (?P<barcode>\d{10,11})
+    \s+
+    (?P<description>.+)
+    $
+    """,
+    re.VERBOSE,
+)
+
+DISCOUNT_RE = re.compile(
+    r"""
+    ^
+    INST\s+SV
+    \s+
+    (?P<description>.+?)
+    \s+
+    (?P<discount>\d+\.\d{2})
+    -.*
+    $
+    """,
+    re.VERBOSE,
+)
+
+DISCOUNT_HEADER_RE = re.compile(
+    r"""
+    ^
+    INST\s+SV
+    \s+
+    (?P<description>.+)
+    $
+    """,
+    re.VERBOSE,
+)
+
+MULTIBUY_DISCOUNT_RE = re.compile(
+    r"""
+    ^
+    \d+
+    \s+AT\s+\d+\s+FOR
+    \s+
+    \d+\.\d{2}-
+    \s+
+    (?P<discount>\d+\.\d{2})
+    -.*
+    $
+    """,
+    re.VERBOSE,
+)
+
+DATE_TIME_RE = re.compile(
+    r"""
+    ^
+    (?P<date>\d{2}/\d{2}/\d{2})
+    \s+
+    (?P<time>\d{2}:\d{2})
+    $
+    """,
+    re.VERBOSE,
+)
+
+TRANSACTION_ID_RE = re.compile(
+    r"""
+    ^
+    TCH
+    \s+
+    .+
+    $
+    """,
+    re.VERBOSE,
 )

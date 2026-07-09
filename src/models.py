@@ -18,7 +18,6 @@ class ReceiptItem:
 
     discount: float = 0.0
 
-    pack_size: Optional[str] = None
     item_code: Optional[str] = None
 
     # Future use if you decide to classify items
@@ -41,7 +40,8 @@ class TaxItem:
 @dataclass
 class Receipt:
     purchase_date: Optional[str] = None
-    receipt_id: Optional[str] = None
+    purchase_time: Optional[str] = None
+    transaction_id: Optional[str] = None
 
     store: str = ""
 
