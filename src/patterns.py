@@ -23,15 +23,41 @@ STORE_RE = re.compile(
 # ==========================================================
 
 SUBTOTAL_RE = re.compile(
-    r"^SUBTOTAL\s+(?P<subtotal>\d+\.\d{2})$",
-    re.IGNORECASE,
+    r"""
+    ^
+    SUBTOTAL
+    \s+
+    (?P<subtotal>\d+\.\d{2})
+    $
+    """,
+    re.VERBOSE,
 )
 
 TOTAL_RE = re.compile(
-    r"^TOTAL\s+(?P<total>\d+\.\d{2})$",
-    re.IGNORECASE,
+    r"""
+    ^
+    TOTAL
+    \s+
+    (?P<total>\d+\.\d{2})
+    $
+    """,
+    re.VERBOSE,
 )
 
+# ==========================================================
+# CHANGE DUE
+# ==========================================================
+
+CHANGE_RE = re.compile(
+    r"""
+    ^
+    CHANGE\s+DUE
+    \s+
+    (?P<change>\d+\.\d{2})
+    $
+    """,
+    re.VERBOSE,
+)
 # ==========================================================
 # TAX
 # ==========================================================
@@ -43,24 +69,6 @@ TOTAL_RE = re.compile(
 # 6% TAX 4 0.30
 #
 # OCR can produce several variants.
-
-# TAX_RE = re.compile(
-#     r"""
-#     ^
-#     (?:
-#         TAX\s+
-#         (?P<code1>\d+)\s+
-#         (?P<rate1>\d+(?:\.\d+)?)\s*%?\s+
-#         (?P<amount1>\d+\.\d{2})
-#     |
-#         (?P<rate2>\d+(?:\.\d+)?)%\s*TAX\s+
-#         (?P<code2>\d+)\s+
-#         (?P<amount2>\d+\.\d{2})
-#     )
-#     $
-#     """,
-#     re.IGNORECASE | re.VERBOSE,
-# )
 
 TAX_RE = re.compile(
     r"""

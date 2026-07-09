@@ -51,7 +51,13 @@ class ReceiptParser:
             if self._parse_tax(line):
                 continue
 
+            if self._parse_totals(line):
+                continue
+
         self._finalize_pending_item()
+
+        self.receipt.tax = round(
+        sum(item.total_price for item in self.receipt.items if item.item_type == "tax"),2,)
 
         return self.receipt
 
@@ -280,6 +286,34 @@ class ReceiptParser:
         return True
 
     def _parse_totals(self, line: str) -> bool:
+        """
+        Parse receipt totals.
+        """
+
+        #
+        # Subtotal
+        #
+
+        match = patterns.SUBTOTAL_RE.match(line)
+
+        if match:
+
+            self.receipt.subtotal = float(match.group("subtotal"))
+
+            return True
+
+        #
+        # Total
+        #
+
+        match = patterns.TOTAL_RE.match(line)
+
+        if match:
+
+            self.receipt.total = float(match.group("total"))
+
+            return True
+
         return False
 
     def _parse_header(self, line: str) -> bool:
