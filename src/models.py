@@ -80,3 +80,39 @@ class Receipt:
             self.calculated_subtotal + self.calculated_tax,
             2,
         )
+
+@property
+def final_price(self) -> float:
+    """
+    Price actually paid after discounts.
+    """
+
+    return round(self.total_price + self.discount, 2)
+
+@property
+def is_tax(self) -> bool:
+    return self.item_type == "tax"
+
+
+@property
+def is_merchandise(self) -> bool:
+    return self.item_type == "item"
+
+
+@property
+def is_discounted(self) -> bool:
+    return self.discount != 0
+
+@property
+def merchandise_items(self):
+    return [item for item in self.items if item.is_merchandise]
+
+
+@property
+def tax_items(self):
+    return [item for item in self.items if item.is_tax]
+
+
+@property
+def total_discount(self):
+    return round(sum(item.discount for item in self.merchandise_items), 2)

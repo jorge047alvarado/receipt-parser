@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Optional
 
-from src.models import Receipt, ReceiptItem, TaxItem
+from src.models import Receipt, ReceiptItem #, TaxItem
 from src import patterns
 
 
@@ -57,7 +57,7 @@ class ReceiptParser:
         self._finalize_pending_item()
 
         self.receipt.tax = round(
-        sum(item.total_price for item in self.receipt.items if item.item_type == "tax"),2,)
+        sum(item.total_price for item in self.receipt.items if item.is_tax),2,)
 
         return self.receipt
 
@@ -209,7 +209,9 @@ class ReceiptParser:
 
         if match:
 
-            description = match.group("description").strip()
+            description = " ".join(
+                match.group("description").strip().upper().split()
+            )
 
             discount = -float(match.group("discount"))
 
@@ -219,7 +221,11 @@ class ReceiptParser:
 
             for item in reversed(self.receipt.items):
 
-                if item.description == description:
+                item_description = " ".join(
+                    item.description.strip().upper().split()
+                )
+
+                if item_description == description:
 
                     item.discount = discount
 
@@ -237,11 +243,17 @@ class ReceiptParser:
 
         if match:
 
-            description = match.group("description").strip()
+            description = " ".join(
+                match.group("description").strip().upper().split()
+            )
 
             for item in reversed(self.receipt.items):
 
-                if item.description == description:
+                item_description = " ".join(
+                    item.description.strip().upper().split()
+                )
+
+                if item_description == description:
 
                     self.pending_discount_item = item
 
