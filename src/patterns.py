@@ -9,7 +9,7 @@ PURCHASE_DATE_RE = re.compile(
 )
 
 TRANSACTION_ID_RE = re.compile(
-    r"^(?P<transaction_id>TCH(?:\s+\d+)+)$",
+    r"^(?P<transaction_id>TC.?(?:\s+\d+)+)$",
     re.IGNORECASE,
 )
 
@@ -74,15 +74,9 @@ TAX_RE = re.compile(
     r"""
     ^
     (?:
-        (?P<rate1>\d+(?:\.\d+)?)%
-        \s+TAX
-        \s+(?P<code1>\d+)
-
-        |
-
         TAX
-        \s+(?P<code2>\d+)
-        \s+(?P<rate2>\d+(?:\.\d+)?)
+        \s+(?P<code>\d+)
+        \s+(?P<rate>\d+(?:\.\d+)?)
         \s*%
     )
 
@@ -90,6 +84,17 @@ TAX_RE = re.compile(
 
     (?P<amount>\d+\.\d{2})
 
+    $
+    """,
+    re.VERBOSE,
+)
+
+ITEM_HEADER_RE = re.compile(
+    r"""
+    ^
+    (?P<barcode>\d{10,11})
+    \s+
+    (?P<description>[A-Z0-9&'/().\- ]+)
     $
     """,
     re.VERBOSE,
@@ -110,7 +115,7 @@ ITEM_RE = re.compile(
     ^
     (?P<barcode>\d{10,11})
     \s+
-    (?P<description>.+?)
+    (?P<description>[A-Z0-9&'/().\- ]+?)
     \s+
     (?P<price>\d+\.\d{2})
     (?:\s+(?P<item_code>[A-Z]))?
@@ -158,26 +163,12 @@ DISCOUNT_HEADER_RE = re.compile(
     re.IGNORECASE,
 )
 
-DISCOUNT_RE = re.compile(
-    r"""
-    ^
-    (?:
-        \d+\s+AT\s+1\s+FOR\s+
-    )?
-    (?P<discount>\d+\.\d{2})-
-    (?:\s+\d+\.\d{2}-)?
-    (?P<item_code>[A-Z])?
-    $
-    """,
-    re.IGNORECASE | re.VERBOSE,
-)
-
 MULTIBUY_HEADER_RE = re.compile(
     r"""
     ^
     (?P<barcode>\d{10,11})
     \s+
-    (?P<description>.+)
+    (?P<description>[A-Z0-9&'/().\- ]+)
     $
     """,
     re.VERBOSE,
@@ -197,12 +188,12 @@ DISCOUNT_RE = re.compile(
     re.VERBOSE,
 )
 
-DISCOUNT_HEADER_RE = re.compile(
+DISCOUNT_INCOMPLETE_RE = re.compile(
     r"""
     ^
-    INST\s+SV
-    \s+
-    (?P<description>.+)
+    (?P<discount>\d+\.\d{2})
+    -
+    (?P<suffix>.*)
     $
     """,
     re.VERBOSE,
@@ -234,13 +225,13 @@ DATE_TIME_RE = re.compile(
     re.VERBOSE,
 )
 
-TRANSACTION_ID_RE = re.compile(
+CASH_REWARDS_RE = re.compile(
     r"""
     ^
-    TCH
+    (?P<description>CASH\s+REWARDS\s+TEND)
     \s+
-    .+
+    (?P<amount>\d+\.\d{2})
     $
     """,
-    re.VERBOSE,
+    re.VERBOSE | re.IGNORECASE,
 )

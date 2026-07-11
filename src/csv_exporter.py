@@ -31,7 +31,7 @@ class CSVExporter:
             rows.append(
                 {
                     "Transaction_ID": receipt.transaction_id,
-                    "Purchase_Date": receipt.date,
+                    "Purchase_Date": receipt.purchase_date,
                     "Purchase_Time": receipt.purchase_time,
                     "Store": receipt.store,
                     "Barcode": item.barcode,

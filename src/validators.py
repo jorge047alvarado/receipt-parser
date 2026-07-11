@@ -45,12 +45,12 @@ class ReceiptValidator:
         # Tax
         #
 
-        if receipt.tax is not None:
+        if receipt.tax_total is not None:
 
-            if abs(receipt.tax - calculated_tax) > ReceiptValidator.TOLERANCE:
+            if abs(receipt.tax_total - calculated_tax) > ReceiptValidator.TOLERANCE:
 
                 errors.append(
-                    f"Tax mismatch (OCR={receipt.tax:.2f}, Calculated={calculated_tax:.2f})"
+                    f"Tax mismatch (OCR={receipt.tax_total:.2f}, Calculated={calculated_tax:.2f})"
                 )
 
         #
@@ -83,7 +83,7 @@ class ReceiptValidator:
             if item.item_type != "item":
                 continue
 
-            subtotal += item.total_price
+            subtotal += item.total_price + item.discount
 
         return round(subtotal, 2)
 
@@ -95,11 +95,8 @@ class ReceiptValidator:
 
         tax = 0.0
 
-        for item in receipt.items:
+        for item in receipt.taxes:
 
-            if item.item_type != "tax":
-                continue
-
-            tax += item.total_price
+            tax += item.tax_amount
 
         return round(tax, 2)

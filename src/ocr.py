@@ -1,6 +1,6 @@
 from pathlib import Path
-
 from paddleocr import PaddleOCR
+from src.ocr_normalizer import OCRNormalizer
 
 
 class OCRReader:
@@ -60,4 +60,6 @@ class OCRReader:
 
                     lines.append(text)
 
-        return lines
+        normalizer = OCRNormalizer()
+        
+        return normalizer.normalize(lines)

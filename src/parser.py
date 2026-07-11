@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Optional
 
-from src.models import Receipt, ReceiptItem #, TaxItem
+from src.models import Receipt, ReceiptItem , TaxItem
 from src import patterns
 
 
@@ -36,28 +36,41 @@ class ReceiptParser:
             if not line:
                 continue
 
-            # Step 2 will parse items here
-            if self._parse_item(line):
+            if line.upper().startswith("SAM'S CLUB"):
+                self.receipt.store = line.upper().strip()
                 continue
 
-            if self._parse_discount(line):
-                continue            
-
-            # Step 3 will parse receipt metadata here
-            if self._parse_discount(line):
+            if line.upper().startswith("MAYAGUEZ, PR"):
+                self.receipt.store = self.receipt.store + " " + line.upper().strip()
                 continue
 
-            # Step 4 will parse totals/taxes here
+            if self._parse_header(line):
+                continue
+
             if self._parse_tax(line):
                 continue
 
             if self._parse_totals(line):
                 continue
 
+            if self._parse_discount(line):
+                continue 
+
+            if self._parse_item(line):
+                continue
+
+            if self._cash_rewards(line):
+                continue
+
         self._finalize_pending_item()
 
-        self.receipt.tax = round(
-        sum(item.total_price for item in self.receipt.items if item.is_tax),2,)
+        #
+        # Compute OCR tax total from all parsed tax lines.
+        #
+        self.receipt.tax_total = round(
+            sum(tax.tax_amount for tax in self.receipt.taxes),
+            2,
+        )
 
         return self.receipt
 
@@ -127,6 +140,20 @@ class ReceiptParser:
                 unit_price=price,
                 total_price=price,
                 item_code=match.group("item_code"),
+                tax_code=match.group("item_code"),
+            )
+
+            self._start_new_item(item)
+
+            return True
+        
+        match = patterns.MULTIBUY_HEADER_RE.match(line)
+
+        if match:
+
+            item = ReceiptItem(
+                barcode=match.group("barcode"),
+                description=match.group("description").strip(),
             )
 
             self._start_new_item(item)
@@ -158,10 +185,12 @@ class ReceiptParser:
                 match.group("total_price")
             )
 
-            item_code = match.group("item_code")
+            tax_code = match.group("item_code")
 
-            if item_code:
-                self.pending_item.item_code = item_code
+            if tax_code:
+                self.pending_item.tax_code = tax_code
+
+            self._finish_pending_item()
 
             return True
         
@@ -187,7 +216,19 @@ class ReceiptParser:
 
         if self.pending_discount_item:
 
-            match = patterns.MULTIBUY_DISCOUNT_RE.match(line)
+            match= patterns.MULTIBUY_DISCOUNT_RE.match(line)
+
+            if match:
+
+                self.pending_discount_item.discount = -float(
+                    match.group("discount")
+                )
+
+                self.pending_discount_item = None
+
+                return True
+            
+            match = patterns.DISCOUNT_INCOMPLETE_RE.match(line)
 
             if match:
 
@@ -239,7 +280,7 @@ class ReceiptParser:
         # ----------------------------------------------------------
         #
 
-        match = patterns.DISCOUNT_HEADER_RE.match(line)
+        match = patterns.DISCOUNT_HEADER_RE.match(line)      
 
         if match:
 
@@ -258,6 +299,8 @@ class ReceiptParser:
                     self.pending_discount_item = item
 
                     return True
+        
+        match = patterns.DISCOUNT_INCOMPLETE_RE.match(line)        
 
         return False
 
@@ -267,10 +310,15 @@ class ReceiptParser:
 
         Supports:
 
+            TAX 1 10.5 % 21.09
+            TAX 2 1 % 4.48
+            TAX 4 6 % 0.30
+
+        and
+
+            10.5% TAX 1 21.09
             1% TAX 2 4.48
             6% TAX 4 0.30
-            TAX 2 1 % 4.48
-            TAX 1 10.5 % 21.09
         """
 
         match = patterns.TAX_RE.match(line)
@@ -278,20 +326,19 @@ class ReceiptParser:
         if not match:
             return False
 
-        rate = match.group("rate1") or match.group("rate2")
-        tax_code = match.group("code1") or match.group("code2")
+        # rate = float(match.group("rate1") or match.group("rate2"))
+        rate = float(match.group("rate"))
+
+        # tax_code = match.group("code1") or match.group("code2")
+        tax_code = match.group("code")
+
         amount = float(match.group("amount"))
 
-        self.receipt.items.append(
-            ReceiptItem(
-                barcode=None,
-                description=f"{rate}% TAX",
-                quantity=1,
-                unit_price=amount,
-                total_price=amount,
-                discount=0.0,
-                item_type="tax",
+        self.receipt.add_tax(
+            TaxItem(
                 tax_code=tax_code,
+                tax_rate=rate,
+                tax_amount=amount,
             )
         )
 
@@ -345,7 +392,7 @@ class ReceiptParser:
 
         if match:
 
-            self.receipt.date = match.group("date")
+            self.receipt.purchase_date = match.group("date")
             self.receipt.purchase_time = match.group("time")
 
             return True
@@ -353,12 +400,49 @@ class ReceiptParser:
         #
         # Transaction ID
         #
-
-        match = patterns.TRANSACTION_ID_RE.match(line)
+        match = patterns.TRANSACTION_ID_RE.match(line.strip())
 
         if match:
 
             self.receipt.transaction_id = line.strip()
+
+            return True
+
+        return False
+
+    def _finish_pending_item(self):
+
+        if self.pending_item is None:
+            return
+
+        self.receipt.add_item(self.pending_item)
+
+        self.pending_item = None
+    
+    def _cash_rewards(self, line: str) -> bool:
+        """
+        Parse cash rewards line.
+
+        Example:
+            CASH REWARDS 1.00
+        """
+
+        match = patterns.CASH_REWARDS_RE.match(line)
+
+        if match:
+
+            self.receipt.cash_rewards = -float(match.group("amount"))
+
+            self.receipt.add_item(
+                ReceiptItem(
+                    description=match.group("description"),
+                    quantity=1,
+                    unit_price=-float(match.group("amount")),
+                    total_price=float(match.group("amount")),
+                    discount=0.0,
+                    item_type="cash_rewards",
+                )
+            )
 
             return True
 

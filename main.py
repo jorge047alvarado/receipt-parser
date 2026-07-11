@@ -18,63 +18,65 @@ def process_receipt(image_path: Path):
 
     print(f"\nProcessing: {image_path.name}")
 
-    #
+    #----------------
     # OCR
-    #
+    #----------------
 
     ocr = OCRReader()
 
     lines = ocr.read(image_path)
 
-    #
+    #----------------
     # Debug OCR output
-    #
+    #----------------
 
-    print("\n----- OCR LINES -----")
+    # print("\n----- OCR LINES -----")
 
-    for idx, line in enumerate(lines):
-        print(f"{idx:03}: {line}")
+    # for idx, line in enumerate(lines):
+    #     print(f"{idx:03}: {line}")
 
-    #
-    # Parse
-    #
+    #----------------
+    # PARSER
+    #----------------
 
-    parser = ReceiptParser(lines)
+    parser = ReceiptParser()
+    
+    receipt = parser.parse(lines)
 
-    receipt = parser.parse()
-
-    #
+    #----------------
     # Validate
-    #
+    #----------------
 
     receipt.validation = ReceiptValidator.validate(receipt)
 
-    #
+    #----------------
     # Save JSON
-    #
+    #----------------
 
     OUTPUT_FOLDER.mkdir(exist_ok=True)
 
-    json_path = OUTPUT_FOLDER / f"{image_path.stem}.json"
+    transaction_id = receipt.transaction_id.replace(" ","_")
 
-    with open(json_path, "w", encoding="utf-8") as f:
+    # json_path = OUTPUT_FOLDER / f"{transaction_id}.json"
 
-        json.dump(
-            receipt.to_dict(),
-            f,
-            indent=4,
-            ensure_ascii=False,
-        )
+    # with open(json_path, "w", encoding="utf-8") as f:
 
-    #
+    #     json.dump(
+    #         receipt.to_dict(),
+    #         f,
+    #         indent=4,
+    #         ensure_ascii=False,
+    #     )
+
+    #----------------
     # Save CSV
-    #
+    #----------------
 
     csv_path = CSVExporter.export(receipt)
 
-    #
+    #----------------
     # Summary
-    #
+    #----------------
 
     print("\nITEM BREAKDOWN")
 
@@ -87,13 +89,28 @@ def process_receipt(image_path: Path):
             item.total_price,
             item.discount,
             item.tax_code,
+            item.item_type
         )
+    
+    print("\nTAX BREAKDOWN")
+
+    for tax in receipt.taxes:
+
+        print(
+            tax.tax_code,
+            tax.tax_rate,
+            tax.tax_amount
+        )
+    
+    print("\nCASH REWARDS")
+
+    print(f"Amount: ${receipt.cash_rewards:.2f}")
 
     print("\nRECEIPT TOTALS")
     print("----------------")
 
     print(f"Subtotal : {receipt.subtotal:.2f}")
-    print(f"Tax      : {receipt.tax:.2f}")
+    print(f"Tax      : {receipt.tax_total:.2f}")
     print(f"Total    : {receipt.total:.2f}")
 
     if receipt.validation:
