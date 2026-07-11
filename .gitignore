@@ -13,3 +13,21 @@ __pycache__/
 
 # Ignore local environment variables / secrets
 .env
+
+# Pytest
+.pytest_cache/
+
+# Coverage reports
+.coverage
+htmlcov/
+
+# Coverage XML reports
+coverage.xml
+
+# IDE files
+.vscode/
+.idea/
+
+# OS generated files
+.DS_Store
+Thumbs.db
