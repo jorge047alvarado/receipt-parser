@@ -23,14 +23,6 @@ def test_transaction_id_pattern():
     assert match
     assert match.group("transaction_id") == "TC 123 456"
 
-
-@pytest.mark.unit
-def test_store_pattern():
-    assert patterns.STORE_RE.match(
-        "SAM'S CLUB, PR"
-    )
-
-
 @pytest.mark.unit
 def test_subtotal_pattern():
     match = patterns.SUBTOTAL_RE.match(
@@ -165,9 +157,3 @@ def test_cash_rewards_pattern():
 
     assert match
     assert match.group("amount") == "5.00"
-
-@pytest.mark.unit
-def test_store_pattern_rejects_invalid_format():
-    assert patterns.STORE_RE.match(
-        "SAM'S CLUB"
-    ) is None

@@ -78,40 +78,42 @@ def process_receipt(image_path: Path):
     # Summary
     #----------------
 
-    print("\nITEM BREAKDOWN")
+    # print("\nITEM BREAKDOWN")
 
-    for item in receipt.items:
+    # for item in receipt.items:
 
-        print(
-            item.description,
-            item.quantity,
-            item.unit_price,
-            item.total_price,
-            item.discount,
-            item.tax_code,
-            item.item_type
-        )
+    #     if item.discount < 0:
+
+    #         print(
+    #             item.description,
+    #             item.quantity,
+    #             item.unit_price,
+    #             item.total_price,
+    #             item.discount,
+    #             item.tax_code,
+    #             item.item_type
+    #         )
     
-    print("\nTAX BREAKDOWN")
+    # print("\nTAX BREAKDOWN")
 
-    for tax in receipt.taxes:
+    # for tax in receipt.taxes:
 
-        print(
-            tax.tax_code,
-            tax.tax_rate,
-            tax.tax_amount
-        )
+    #     print(
+    #         tax.tax_code,
+    #         tax.tax_rate,
+    #         tax.tax_amount
+    #     )
     
-    print("\nCASH REWARDS")
+    # print("\nCASH REWARDS")
 
-    print(f"Amount: ${receipt.cash_rewards:.2f}")
+    # print(f"Amount: ${receipt.cash_rewards:.2f}")
 
-    print("\nRECEIPT TOTALS")
-    print("----------------")
+    # print("\nRECEIPT TOTALS")
+    # print("----------------")
 
-    print(f"Subtotal : {receipt.subtotal:.2f}")
-    print(f"Tax      : {receipt.tax_total:.2f}")
-    print(f"Total    : {receipt.total:.2f}")
+    # print(f"Subtotal : {receipt.subtotal:.2f}")
+    # print(f"Tax      : {receipt.tax_total:.2f}")
+    # print(f"Total    : {receipt.total:.2f}")
 
     if receipt.validation:
 
@@ -125,7 +127,7 @@ def process_receipt(image_path: Path):
 
         print("\nValidation: PASSED")
 
-    print(f"\nJSON saved to: {json_path}")
+    # print(f"\nJSON saved to: {json_path}")
     print(f"CSV saved to : {csv_path}")
 
 

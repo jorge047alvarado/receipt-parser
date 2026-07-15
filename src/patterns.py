@@ -13,11 +13,6 @@ TRANSACTION_ID_RE = re.compile(
     re.IGNORECASE,
 )
 
-STORE_RE = re.compile(
-    r"^[A-Z ']+,\s*[A-Z]{2}$",
-    re.IGNORECASE,
-)
-
 # ==========================================================
 # RECEIPT TOTALS
 # ==========================================================

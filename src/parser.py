@@ -53,11 +53,16 @@ class ReceiptParser:
             if self._parse_totals(line):
                 continue
 
+            if line.startswith("INST SV"):
+                self._finalize_pending_item()
+
             if self._parse_discount(line):
-                continue 
+                continue
 
             if self._parse_item(line):
                 continue
+
+            print(line)
 
             if self._cash_rewards(line):
                 continue
@@ -195,6 +200,7 @@ class ReceiptParser:
             return True
         
     def _parse_discount(self, line: str) -> bool:
+
         """
         Parse Instant Savings (INST SV) discount lines.
 
@@ -280,7 +286,7 @@ class ReceiptParser:
         # ----------------------------------------------------------
         #
 
-        match = patterns.DISCOUNT_HEADER_RE.match(line)      
+        match = patterns.DISCOUNT_HEADER_RE.match(line)    
 
         if match:
 
@@ -299,8 +305,6 @@ class ReceiptParser:
                     self.pending_discount_item = item
 
                     return True
-        
-        match = patterns.DISCOUNT_INCOMPLETE_RE.match(line)        
 
         return False
 

@@ -31,3 +31,10 @@ coverage.xml
 # OS generated files
 .DS_Store
 Thumbs.db
+
+# Archived Files
+archive/
+
+# Output Files
+output/*.csv
+output/*.json
