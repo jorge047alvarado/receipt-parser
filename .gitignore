@@ -38,3 +38,7 @@ archive/
 # Output Files
 output/*.csv
 output/*.json
+
+# Input files
+input/*.png
+input/*.jpg

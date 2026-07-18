@@ -90,7 +90,7 @@ def process_receipt(image_path: Path):
     #             item.unit_price,
     #             item.total_price,
     #             item.discount,
-    #             item.tax_code,
+    #             item.item_code,
     #             item.item_type
     #         )
     

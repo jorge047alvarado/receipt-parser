@@ -42,7 +42,7 @@ class CSVExporter:
                     "Discount": item.discount,
                     "Final_Price": item.final_price,
                     "Item_Type": item.item_type,
-                    "Tax_Code": item.tax_code,
+                    "Item_code": item.item_code,
                 }
             )
 
