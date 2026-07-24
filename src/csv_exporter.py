@@ -28,21 +28,22 @@ class CSVExporter:
 
         for item in receipt.items:
 
+            print(item.item_type)
+
             rows.append(
                 {
-                    "Transaction_ID": receipt.transaction_id,
                     "Purchase_Date": receipt.purchase_date,
-                    "Purchase_Time": receipt.purchase_time,
-                    "Store": receipt.store,
-                    "Barcode": item.barcode,
-                    "Description": item.description,
-                    "Quantity": item.quantity,
-                    "Unit_Price": item.unit_price,
                     "Total_Price": item.total_price,
+                    "Unit_Price": item.unit_price,
+                    "Quantity": item.quantity,
+                    "Store": receipt.store,
+                    "Description": item.description,
+                    "Barcode": item.barcode,
                     "Discount": item.discount,
                     "Final_Price": item.final_price,
+                    "Item_code": item.item_code,
+                    "Transaction_ID": receipt.transaction_id,
                     "Item_Type": item.item_type,
-                    "Tax_Code": item.tax_code,
                 }
             )
 

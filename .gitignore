@@ -38,3 +38,11 @@ archive/
 # Output Files
 output/*.csv
 output/*.json
+
+# Input files
+input/*.png
+input/*.jpg
+
+# Test Files
+tests/integration/data/*.png
+tests/integration/data/*.jpg

@@ -14,7 +14,20 @@ class ReceiptParser:
     def __init__(self):
         self.receipt: Optional[Receipt] = None
         self.pending_item: Optional[ReceiptItem] = None
-        self.pending_discount_item: Optional[ReceiptItem] = None    
+        self.pending_discount_item: Optional[ReceiptItem] = None   
+
+        #
+        # Ordered list of parsing handlers.
+        #
+        self.handlers = [
+            self._parse_store,
+            self._parse_header,
+            self._parse_tax,
+            self._parse_totals,
+            self._parse_discount,
+            self._parse_item,
+            self._cash_rewards,
+        ] 
 
     # ------------------------------------------------------------------
     # Public API
@@ -36,35 +49,21 @@ class ReceiptParser:
             if not line:
                 continue
 
-            if line.upper().startswith("SAM'S CLUB"):
-                self.receipt.store = line.upper().strip()
-                continue
-
-            if line.upper().startswith("MAYAGUEZ, PR"):
-                self.receipt.store = self.receipt.store + " " + line.upper().strip()
-                continue
-
-            if self._parse_header(line):
-                continue
-
-            if self._parse_tax(line):
-                continue
-
-            if self._parse_totals(line):
-                continue
-
-            if line.startswith("INST SV"):
+            #
+            # Before parsing discounts, flush any pending item.
+            # #
+            if line.upper().startswith("INST SV"):
                 self._finalize_pending_item()
+            
+            handled = False
 
-            if self._parse_discount(line):
-                continue
+            for handler in self.handlers:
 
-            if self._parse_item(line):
-                continue
+                if handler(line):
+                    handled = True
+                    break
 
-            print(line)
-
-            if self._cash_rewards(line):
+            if handled:
                 continue
 
         self._finalize_pending_item()
@@ -76,6 +75,8 @@ class ReceiptParser:
             sum(tax.tax_amount for tax in self.receipt.taxes),
             2,
         )
+
+        self.receipt.tax = self.receipt.tax_total
 
         return self.receipt
 
@@ -145,10 +146,9 @@ class ReceiptParser:
                 unit_price=price,
                 total_price=price,
                 item_code=match.group("item_code"),
-                tax_code=match.group("item_code"),
             )
 
-            self._start_new_item(item)
+            self.receipt.add_item(item)
 
             return True
         
@@ -190,12 +190,9 @@ class ReceiptParser:
                 match.group("total_price")
             )
 
-            tax_code = match.group("item_code")
+            self.pending_item.item_code = match.group("item_code")
 
-            if tax_code:
-                self.pending_item.tax_code = tax_code
-
-            self._finish_pending_item()
+            self._finalize_pending_item()
 
             return True
         
@@ -305,6 +302,18 @@ class ReceiptParser:
                     self.pending_discount_item = item
 
                     return True
+            
+            item = ReceiptItem(
+                barcode=0,
+                description=line,
+                quantity=0,
+                unit_price=0,
+                total_price=0,
+                item_code='Z',
+                item_type='MISSED-ITEM-AND-DISCOUNT',
+            )
+
+            self.receipt.add_item(item)      
 
         return False
 
@@ -345,6 +354,17 @@ class ReceiptParser:
                 tax_amount=amount,
             )
         )
+
+        item = ReceiptItem(
+                barcode=0,
+                description=("TAX " + str(tax_code) + " " + str(rate) + "%"),
+                quantity=0,
+                unit_price=amount,
+                total_price=amount,
+                item_type='tax',
+            )
+
+        self.receipt.add_item(item) 
 
         return True
 
@@ -413,15 +433,6 @@ class ReceiptParser:
             return True
 
         return False
-
-    def _finish_pending_item(self):
-
-        if self.pending_item is None:
-            return
-
-        self.receipt.add_item(self.pending_item)
-
-        self.pending_item = None
     
     def _cash_rewards(self, line: str) -> bool:
         """
@@ -448,6 +459,20 @@ class ReceiptParser:
                 )
             )
 
+            return True
+
+        return False
+
+    def _parse_store(self, line: str) -> bool:
+
+        upper = line.upper().strip()
+
+        if upper.startswith("SAM'S CLUB"):
+            self.receipt.store = upper
+            return True
+
+        if upper.startswith("MAYAGUEZ, PR"):
+            self.receipt.store += " " + upper
             return True
 
         return False

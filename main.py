@@ -57,16 +57,16 @@ def process_receipt(image_path: Path):
 
     transaction_id = receipt.transaction_id.replace(" ","_")
 
-    # json_path = OUTPUT_FOLDER / f"{transaction_id}.json"
+    json_path = OUTPUT_FOLDER / f"{transaction_id}.json"
 
-    # with open(json_path, "w", encoding="utf-8") as f:
+    with open(json_path, "w", encoding="utf-8") as f:
 
-    #     json.dump(
-    #         receipt.to_dict(),
-    #         f,
-    #         indent=4,
-    #         ensure_ascii=False,
-    #     )
+        json.dump(
+            receipt.to_dict(),
+            f,
+            indent=4,
+            ensure_ascii=False,
+        )
 
     #----------------
     # Save CSV
@@ -82,38 +82,38 @@ def process_receipt(image_path: Path):
 
     # for item in receipt.items:
 
-    #     if item.discount < 0:
-
-    #         print(
-    #             item.description,
-    #             item.quantity,
-    #             item.unit_price,
-    #             item.total_price,
-    #             item.discount,
-    #             item.tax_code,
-    #             item.item_type
-    #         )
-    
-    # print("\nTAX BREAKDOWN")
-
-    # for tax in receipt.taxes:
-
     #     print(
-    #         tax.tax_code,
-    #         tax.tax_rate,
-    #         tax.tax_amount
+    #         item.description,
+    #         item.quantity,
+    #         item.unit_price,
+    #         item.total_price,
+    #         item.discount,
+    #         item.item_code,
+    #         item.item_type
     #     )
+
+    print(receipt)
     
-    # print("\nCASH REWARDS")
+    print("\nTAX BREAKDOWN")
 
-    # print(f"Amount: ${receipt.cash_rewards:.2f}")
+    for tax in receipt.taxes:
 
-    # print("\nRECEIPT TOTALS")
-    # print("----------------")
+        print(
+            tax.tax_code,
+            tax.tax_rate,
+            tax.tax_amount
+        )
+    
+    print("\nCASH REWARDS")
 
-    # print(f"Subtotal : {receipt.subtotal:.2f}")
-    # print(f"Tax      : {receipt.tax_total:.2f}")
-    # print(f"Total    : {receipt.total:.2f}")
+    print(f"Amount: ${receipt.cash_rewards:.2f}")
+
+    print("\nRECEIPT TOTALS")
+    print("----------------")
+
+    print(f"Subtotal : {receipt.subtotal:.2f}")
+    print(f"Tax      : {receipt.tax_total:.2f}")
+    print(f"Total    : {receipt.total:.2f}")
 
     if receipt.validation:
 
