@@ -207,3 +207,50 @@ def test_complete_single_line_item():
     assert receipt.items[0].total_price == 12.98
     assert receipt.items[0].item_code == 'T'
     assert receipt.items[0].discount == 0.00
+
+@pytest.mark.unit
+def test_parse_multibuy_discount():
+
+    receipt = ReceiptParser().parse(
+        ["sam's club",
+         "TM","CLUB MANAGER JUAN",
+         "7878052100",
+         "MAYAGUEZ, PR",
+         "07/05/26 15:02 4750 6225 83",
+         "0999999999 AIR FRYER",
+         "2 AT 1 FOR 24.99 49.98 T",
+         "INST SV AIR FRYER",
+         "2 AT 1 FOR 6.00- 12.00-T",
+        ]
+    )
+
+    item = receipt.items[0]
+
+    assert item.barcode == "0999999999"
+    assert item.description == "AIR FRYER"
+    assert item.quantity == 2
+    assert item.unit_price == 24.99
+    assert item.total_price == 49.98
+    assert item.discount == -12.00
+    assert item.item_code == "T"
+
+@pytest.mark.unit
+def test_multiple_discounts():
+
+    receipt = ReceiptParser().parse(
+        ["sam's club",
+         "TM","CLUB MANAGER JUAN",
+         "7878052100",
+         "MAYAGUEZ, PR",
+         "07/05/26 15:02 4750 6225 83",
+         "1111111111 MILK 5.00 T",
+         "2222222222 BREAD 3.00 T",
+         "INST SV MILK",
+         "1.00-T",
+         "INST SV BREAD",
+         "0.50-T",
+        ]
+    )
+
+    assert receipt.items[0].discount == -1.00
+    assert receipt.items[1].discount == -0.50

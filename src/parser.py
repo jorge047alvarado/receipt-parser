@@ -76,6 +76,8 @@ class ReceiptParser:
             2,
         )
 
+        self.receipt.tax = self.receipt.tax_total
+
         return self.receipt
 
     # ------------------------------------------------------------------
@@ -352,6 +354,17 @@ class ReceiptParser:
                 tax_amount=amount,
             )
         )
+
+        item = ReceiptItem(
+                barcode=0,
+                description=("TAX " + str(tax_code) + " " + str(rate) + "%"),
+                quantity=0,
+                unit_price=amount,
+                total_price=amount,
+                item_type='tax',
+            )
+
+        self.receipt.add_item(item) 
 
         return True
 

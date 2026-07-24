@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field, asdict
-from typing import Optional
+from typing import Optional, Any, Dict
 
 # ----------------------------------------------------------------------
 # Tax Item
@@ -62,6 +62,21 @@ class ReceiptItem:
         return asdict(self) | {
             "final_price": self.final_price
         }
+    
+    @classmethod
+    def from_dict(cls, dictionary: Dict[str, Any]) -> "ReceiptItem":
+
+        return cls(
+            barcode=dictionary["barcode"],
+            description=dictionary["description"],
+            quantity=dictionary["quantity"],
+            unit_price=dictionary["unit_price"],
+            total_price=dictionary["total_price"],
+            discount=dictionary["discount"],
+            item_code=dictionary["item_code"],
+            item_type=dictionary["item_type"],
+            tax_code=dictionary["tax_code"]
+        )
 
 
 # ----------------------------------------------------------------------
@@ -140,7 +155,7 @@ class Receipt:
             self.calculated_tax,
             2,
         )
-
+    
     def to_dict(self) -> dict:
         return {
             "purchase_date": self.purchase_date,
@@ -161,3 +176,21 @@ class Receipt:
             ],
             "validation": self.validation,
         }
+    
+    @classmethod
+    def from_dict(cls, dictionary: Dict[str, Any]) -> Receipt:
+
+        return cls(
+            purchase_date=dictionary['purchase_date'],
+            purchase_time=dictionary['purchase_time'],
+            transaction_id=dictionary['transaction_id'],
+            cash_rewards=dictionary['cash_rewards'],
+            store=dictionary['store'],
+            subtotal=dictionary['subtotal'],
+            tax=dictionary['tax'],
+            tax_total=dictionary['tax'],
+            taxes=[{"tax_code":tax['tax_code'], "tax_rate": tax['tax_rate'], "tax_amount": tax['tax_amount']} for tax in dictionary['taxes']],
+            total=dictionary['total'],
+            items=[ReceiptItem.from_dict(item) for item in dictionary.get("items", [])],
+            validation= dictionary['validation'],
+        )
