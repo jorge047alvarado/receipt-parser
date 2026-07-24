@@ -46,3 +46,4 @@ input/*.jpg
 # Test Files
 tests/integration/data/*.png
 tests/integration/data/*.jpg
+tests/integration/data/*.json
