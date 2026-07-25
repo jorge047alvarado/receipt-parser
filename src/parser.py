@@ -358,7 +358,7 @@ class ReceiptParser:
         item = ReceiptItem(
                 barcode=0,
                 description=("TAX " + str(tax_code) + " " + str(rate) + "%"),
-                quantity=0,
+                quantity=1,
                 unit_price=amount,
                 total_price=amount,
                 item_type='tax',
